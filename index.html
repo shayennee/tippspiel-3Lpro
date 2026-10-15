@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tippspiel L-3LPa – Volley Köniz</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#0A3A8C; --blue-text:#0A3A8C; --blue-soft:#E7EEFA; --yellow:#FFCE00; --navy:#07285F;
+  --ink:#16181D; --muted:#5C6068; --bg:#F1F1EE; --surface:#FFFFFF; --line:#D9D9D4; --ok:#17784A; --err:#B3261E;
+  --cond:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow","Helvetica Neue",Arial,sans-serif;
+  color-scheme:light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root{--blue:#2F6FD6; --blue-text:#9DBDF3; --blue-soft:#16233A; --yellow:#FFD43B;
+    --ink:#F0F0EC; --muted:#A4A7AE; --bg:#111216; --surface:#1B1D22; --line:#32353C; --ok:#4CC38A; --err:#FF8A80; color-scheme:dark}
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+
+.hero{background:#0A3A8C;color:#fff;position:relative;overflow:hidden;border-bottom:6px solid var(--yellow)}
+.hero::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(90deg,transparent calc(62% - 3px),rgba(255,206,0,.35) calc(62% - 3px),rgba(255,206,0,.35) calc(62% + 3px),transparent calc(62% + 3px)),
+    linear-gradient(90deg,transparent calc(100% - 12px),var(--yellow) calc(100% - 12px))}
+.hero-in{position:relative;max-width:760px;margin:0 auto;padding:22px 20px 24px}
+.logo-plate{display:inline-flex;align-items:center;gap:10px;background:#fff;border-radius:8px;padding:8px 12px;color:#0A3A8C;font-weight:700}
+.logo-plate img{height:52px;width:auto;display:block}
+.ball{width:28px;height:28px}
+.hero h1{font-family:var(--cond);font-weight:800;font-size:clamp(56px,15vw,104px);line-height:.86;margin:16px 0 8px;color:var(--yellow)}
+.hero p{margin:0;max-width:34ch}
+
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--navy);box-shadow:0 2px 0 var(--yellow)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--navy)}
+.tabs-in{max-width:760px;margin:0 auto;display:flex;gap:4px;padding:0 12px;overflow-x:auto}
+.tab{background:none;border:0;color:#fff;opacity:.75;font-family:var(--cond);font-weight:700;font-size:19px;padding:12px 10px 10px;border-bottom:4px solid transparent;cursor:pointer;white-space:nowrap}
+.tab[aria-selected="true"]{opacity:1;border-bottom-color:var(--yellow)}
+
+main{max-width:760px;margin:0 auto;padding:20px 16px 56px}
+.notice{background:var(--surface);border-left:6px solid var(--yellow);padding:14px 16px;margin-bottom:18px;border-radius:4px}
+.notice strong{display:block;font-family:var(--cond);font-size:20px;line-height:1.2;margin-bottom:2px}
+
+.me{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;margin-bottom:22px}
+.me h3{font-family:var(--cond);font-size:22px;margin:0 0 4px}
+.me p{margin:0 0 10px;color:var(--muted);font-size:14px}
+.me-row{display:flex;flex-wrap:wrap;gap:8px}
+.me input{flex:1 1 160px;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:var(--bg)}
+.me input.pin{flex:0 1 110px;letter-spacing:.2em}
+.me .err{color:var(--err);font-size:14px;margin-top:8px}
+.logged{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.logged b{font-family:var(--cond);font-size:22px}
+.btn{background:var(--blue);color:#fff;border:0;border-radius:4px;padding:10px 16px;font-weight:600;cursor:pointer}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);padding:6px 12px}
+
+h2{font-family:var(--cond);font-weight:800;font-size:30px;line-height:1.1;margin:30px 0 12px}
+h2:first-child{margin-top:0}
+.sub{color:var(--muted);font-size:15px;margin:-6px 0 14px}
+
+.match{display:grid;grid-template-columns:64px 1fr;gap:0 14px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;margin-bottom:12px}
+.date{grid-row:span 2;text-align:center;border-right:1px solid var(--line);padding-right:12px}
+.date b{display:block;font-family:var(--cond);font-weight:800;font-size:38px;line-height:1}
+.date span{display:block;font-size:13px;color:var(--muted);line-height:1.3}
+.teams{font-family:var(--cond);font-weight:700;font-size:23px;line-height:1.15}
+.teams .vs{color:var(--muted);font-weight:600;font-size:18px;margin:0 4px}
+.meta{color:var(--muted);font-size:14px;margin-top:2px}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:1px 7px;border-radius:3px;background:var(--blue-soft);color:var(--blue-text);margin-right:6px;vertical-align:1px}
+.tag.away{background:var(--bg);color:var(--muted)}
+.picker{grid-column:2;display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:12px}
+.pick{font-family:var(--cond);font-weight:700;font-size:21px;padding:8px 0;border-radius:4px;cursor:pointer;border:2px solid var(--line);background:var(--bg);color:var(--ink);transition:transform .08s}
+.pick.win{border-color:color-mix(in srgb,var(--blue) 40%,var(--line))}
+.pick[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.pick.win[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.pick:active{transform:scale(.95)}
+.pick:disabled{cursor:default;opacity:.55}
+.pick[aria-pressed="true"]:disabled{opacity:1}
+.state{grid-column:2;margin-top:10px;font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px}
+.state b{color:var(--ink)}
+.pts{font-weight:700;color:var(--ok)}
+.pts.zero{color:var(--muted)}
+.dist{grid-column:2;margin-top:8px;display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--bg)}
+.dist i{display:block;height:100%}
+@media (max-width:420px){
+  .match{grid-template-columns:52px 1fr;gap:0 10px;padding:12px}
+  .date b{font-size:32px}
+  .picker,.state,.dist{grid-column:1 / -1}
+  .pick{font-size:19px}
+}
+
+.table-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:11px 12px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:13px;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+td.rank{font-family:var(--cond);font-weight:800;font-size:22px;width:44px}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td.total{font-family:var(--cond);font-weight:800;font-size:22px;color:var(--blue-text)}
+tr.mine td{background:var(--blue-soft)}
+.rules{color:var(--muted);font-size:14px;margin-top:12px}
+.empty{background:var(--surface);border:2px dashed var(--line);border-radius:6px;padding:22px;text-align:center;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:4px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-in">
+    <div class="logo-plate">
+      <img src="logo.png" alt="Volley Köniz" onload="var f=document.getElementById('fallback');if(f)f.style.display='none'" onerror="this.remove()">
+      <span id="fallback" style="display:inline-flex;align-items:center;gap:8px">
+        <svg class="ball" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#FFCE00" stroke="#0A3A8C" stroke-width="2.4"/><path d="M16 2c-3 6-3 14 2 20M4.5 9.5c6 1 13 5 16 11M27.5 9c-6 0-12.5 3-17 9.5M10 28c2-5 6-8 12-8" fill="none" stroke="#0A3A8C" stroke-width="2"/></svg>
+        Volley Köniz
+      </span>
+    </div>
+    <h1>Tippspiel</h1>
+    <p>Team L-3LPa in der 3. Liga Pro. Tipp jedes Spiel vor Anpfiff und hol dir Punkte.</p>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Bereiche">
+  <div class="tabs-in" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-view="tips">Tippen</button>
+    <button class="tab" role="tab" aria-selected="false" data-view="table">Rangliste</button>
+  </div>
+</nav>
+
+<main>
+  <div id="notice"></div>
+
+  <section id="view-tips">
+    <div class="me" id="loginBox">
+      <h3>Mitmachen</h3>
+      <p>Wähl einen Namen und einen 4-stelligen PIN. Mit dem gleichen Namen und PIN kannst du dich später auf jedem Gerät wieder anmelden.</p>
+      <div class="me-row">
+        <input id="nameIn" maxlength="30" placeholder="Dein Name" autocomplete="nickname">
+        <input id="pinIn" class="pin" inputmode="numeric" maxlength="4" placeholder="PIN" autocomplete="off">
+        <button class="btn" id="loginBtn">Anmelden</button>
+      </div>
+      <div class="err" id="loginErr" hidden></div>
+    </div>
+    <div class="me logged" id="meBox" hidden>
+      <span>Angemeldet als</span><b id="meName"></b>
+      <button class="btn ghost" id="logoutBtn">Abmelden</button>
+    </div>
+    <div id="upcoming"></div>
+    <div id="past"></div>
+  </section>
+
+  <section id="view-table" hidden>
+    <h2>Rangliste</h2>
+    <div id="tableBox"></div>
+    <p class="rules">Exakter Satzstand: 3 Punkte. Richtiger Sieger: 1 Punkt. Tipps sind bis zum Spielbeginn änderbar, danach siehst du, wie die anderen getippt haben.</p>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ====== HIER DIE WEB-APP-URL AUS GOOGLE APPS SCRIPT EINFÜGEN ====== */
+const API_URL = "https://script.google.com/macros/s/AKfycbycjD-skKo8zH4KxEmAkMcJs4ZRzZ0b2v5pcvddydYtOZf3gXI-j6eKx7IyeF6EEdwudw/exec";
+/* ================================================================== */
+
+const RESULTS=["3:0","3:1","3:2","2:3","1:3","0:3"];
+const DIST_COLORS=["#0A3A8C","#2F6FD6","#8FB4F2","#FFE27A","#FFCE00","#C99A00"];
+const MONTHS=["Jan","Feb","März","Apr","Mai","Juni","Juli","Aug","Sep","Okt","Nov","Dez"];
+const DAYS=["So","Mo","Di","Mi","Do","Fr","Sa"];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+let matches=[], publicTips=[], players=[], me=null, myPicks={}, loaded=false;
+
+const start=m=>new Date(m.date+"T"+(m.time||"00:00"));
+const locked=m=>!!m.result || Date.now()>=start(m).getTime();
+const kWin=s=>+s[0]>+s[2];
+function points(tip,res){ if(!tip||!res) return 0; if(tip===res) return 3; return kWin(tip)===kWin(res)?1:0; }
+const sorted=()=>[...matches].sort((a,b)=>start(a)-start(b));
+function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove("show"),2200); }
+function setNotice(title,text){ $("#notice").innerHTML = title ? `<div class="notice"><strong>${esc(title)}</strong>${esc(text)}</div>` : ""; }
+
+const store={
+  get(){ try{ return JSON.parse(localStorage.getItem("vk-tipp-me")||"null"); }catch(e){ return null; } },
+  set(v){ try{ v?localStorage.setItem("vk-tipp-me",JSON.stringify(v)):localStorage.removeItem("vk-tipp-me"); }catch(e){} }
+};
+
+/* API */
+async function apiGet(){
+  const r=await fetch(API_URL+"?t="+Date.now());
+  return r.json();
+}
+async function apiPost(body){
+  const r=await fetch(API_URL,{method:"POST",body:JSON.stringify(body)}); // text/plain: kein CORS-Preflight
+  const j=await r.json();
+  if(!j.ok) throw new Error(j.error||"Unbekannter Fehler");
+  return j;
+}
+
+/* Tabs */
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",x===b));
+  ["tips","table"].forEach(v=>$("#view-"+v).hidden=(v!==b.dataset.view));
+}));
+
+/* Render */
+function matchCard(m){
+  const d=start(m), isLocked=locked(m), mine=myPicks[m.id], home=m.home!=="a";
+  const teams = home ? `Volley Köniz<span class="vs">gegen</span>${esc(m.opp)}` : `${esc(m.opp)}<span class="vs">gegen</span>Volley Köniz`;
+  const canPick = !!me && !isLocked;
+  let body="";
+  if(!isLocked){
+    body=`<div class="picker" role="group" aria-label="Tipp aus Sicht Köniz">${RESULTS.map(r=>`<button class="pick ${kWin(r)?"win":""}" data-m="${esc(m.id)}" data-r="${r}" aria-pressed="${mine===r}" ${canPick?"":"disabled"} aria-label="Köniz ${r[0]} zu ${r[2]}">${r}</button>`).join("")}</div>`;
+  }
+  let state;
+  if(m.result){
+    const p=points(mine,m.result);
+    state=`<span>Resultat <b>${m.result}</b></span>${me?`<span>Dein Tipp <b>${mine||"keiner"}</b></span><span class="pts ${p?"":"zero"}">${p} ${p===1?"Punkt":"Punkte"}</span>`:""}`;
+  } else if(isLocked){
+    state=`<span>Spiel läuft oder wartet aufs Resultat</span>${me?`<span>Dein Tipp <b>${mine||"keiner"}</b></span>`:""}`;
+  } else if(!me){
+    state=`<span>Melde dich oben an, um zu tippen</span>`;
+  } else {
+    state = mine ? `<span>Tipp gespeichert, änderbar bis Anpfiff</span>` : `<span>Noch nicht getippt</span>`;
+  }
+  let dist="";
+  if(isLocked){
+    const counts=RESULTS.map(r=>publicTips.filter(t=>t.matchId===m.id&&t.tip===r).length);
+    const total=counts.reduce((a,b)=>a+b,0);
+    if(total){
+      dist=`<div class="dist">${counts.map((c,i)=>c?`<i style="width:${c/total*100}%;background:${DIST_COLORS[i]}" title="${RESULTS[i]}: ${c}"></i>`:"").join("")}</div>
+      <div class="state" style="margin-top:4px">${RESULTS.map((r,i)=>counts[i]?`<span>${r}: ${counts[i]}</span>`:"").join("")}</div>`;
+    }
+  }
+  return `<article class="match">
+    <div class="date"><b>${d.getDate()}</b><span>${MONTHS[d.getMonth()]}</span><span>${DAYS[d.getDay()]} ${esc(m.time||"")}</span></div>
+    <div><div class="teams">${teams}</div><div class="meta"><span class="tag ${home?"":"away"}">${home?"Heim":"Auswärts"}</span>${esc(m.venue||"")}</div></div>
+    ${body}<div class="state">${state}</div>${dist}</article>`;
+}
+
+function renderTips(){
+  if(!loaded){ $("#upcoming").innerHTML=`<div class="empty">Spiele werden geladen …</div>`; return; }
+  const all=sorted(), up=all.filter(m=>!locked(m)), past=all.filter(locked).reverse();
+  if(!all.length){ $("#upcoming").innerHTML=`<div class="empty">Noch keine Spiele eingetragen.</div>`; $("#past").innerHTML=""; return; }
+  $("#upcoming").innerHTML=`<h2>Nächste Spiele</h2><p class="sub">Tipp aus Sicht von Köniz: blau heisst Köniz gewinnt.</p>`+
+    (up.length?up.map(matchCard).join(""):`<div class="empty">Gerade keine offenen Spiele zum Tippen.</div>`);
+  $("#past").innerHTML = past.length ? `<h2>Gespielt</h2>`+past.map(matchCard).join("") : "";
+}
+
+function renderTable(){
+  const finished=matches.filter(m=>m.result);
+  const names=new Map();
+  players.forEach(n=>names.set(n.toLowerCase(),n));
+  publicTips.forEach(t=>{ if(!names.has(t.name.toLowerCase())) names.set(t.name.toLowerCase(),t.name); });
+  const rows=[...names.entries()].map(([key,name])=>{
+    let total=0,exact=0,winner=0;
+    finished.forEach(m=>{ const t=publicTips.find(x=>x.matchId===m.id&&x.name.toLowerCase()===key); if(!t) return;
+      const p=points(t.tip,m.result); total+=p; if(p===3) exact++; else if(p===1) winner++; });
+    return {key,name,total,exact,winner};
+  }).sort((a,b)=>b.total-a.total||b.exact-a.exact||a.name.localeCompare(b.name));
+  if(!rows.length){ $("#tableBox").innerHTML=`<div class="empty">Noch niemand dabei. Melde dich an und tipp das erste Spiel.</div>`; return; }
+  let rank=0,prev=null; const myKey=me?me.name.toLowerCase():null;
+  $("#tableBox").innerHTML=`<div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Name</th><th class="num">Exakt</th><th class="num">Sieger</th><th class="num">Punkte</th></tr></thead>
+    <tbody>${rows.map((r,i)=>{ if(!prev||r.total!==prev.total||r.exact!==prev.exact) rank=i+1; prev=r;
+      return `<tr class="${r.key===myKey?"mine":""}"><td class="rank">${rank}</td><td>${esc(r.name)}</td><td class="num">${r.exact}</td><td class="num">${r.winner}</td><td class="num total">${r.total}</td></tr>`;}).join("")}</tbody></table></div>`;
+}
+
+function renderMe(){
+  $("#loginBox").hidden=!!me; $("#meBox").hidden=!me;
+  if(me) $("#meName").textContent=me.name;
+}
+function renderAll(){ renderMe(); renderTips(); renderTable(); }
+
+/* Laden */
+async function loadData(){
+  try{
+    const j=await apiGet();
+    matches=j.matches||[]; publicTips=j.tips||[]; players=j.players||[]; loaded=true; setNotice();
+  }catch(e){ console.error(e); setNotice("Daten konnten nicht geladen werden","Prüf deine Internetverbindung und lade die Seite neu."); }
+  renderAll();
+}
+
+/* Anmelden */
+async function login(name,pin,silent){
+  $("#loginErr").hidden=true; $("#loginBtn").disabled=true;
+  try{
+    const j=await apiPost({action:"login",name,pin});
+    me={name:j.name,pin}; myPicks=j.picks||{}; store.set(me);
+    if(!players.some(p=>p.toLowerCase()===j.name.toLowerCase())) players.push(j.name);
+    if(!silent) toast("Willkommen, "+j.name);
+  }catch(e){
+    if(silent){ store.set(null); }
+    else { $("#loginErr").textContent=e.message; $("#loginErr").hidden=false; }
+  }finally{ $("#loginBtn").disabled=false; renderAll(); }
+}
+$("#loginBtn").addEventListener("click",()=>login($("#nameIn").value.trim(),$("#pinIn").value.trim(),false));
+$("#pinIn").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#loginBtn").click(); });
+$("#logoutBtn").addEventListener("click",()=>{ me=null; myPicks={}; store.set(null); renderAll(); });
+
+/* Tippen */
+document.addEventListener("click",async e=>{
+  const p=e.target.closest(".pick"); if(!p||p.disabled||!me) return;
+  const m=matches.find(x=>x.id===p.dataset.m); if(!m||locked(m)) return;
+  const before=myPicks[m.id];
+  myPicks={...myPicks,[m.id]:p.dataset.r}; renderTips();
+  try{ await apiPost({action:"tip",name:me.name,pin:me.pin,matchId:m.id,tip:p.dataset.r}); toast("Tipp gespeichert"); }
+  catch(err){ myPicks={...myPicks}; if(before) myPicks[m.id]=before; else delete myPicks[m.id]; renderTips(); toast(err.message); }
+});
+
+/* Start */
+(async()=>{
+  renderAll();
+  if(!API_URL.startsWith("https://")){ setNotice("Noch nicht verbunden","In index.html fehlt die Web-App-URL aus Google Apps Script (API_URL)."); return; }
+  await loadData();
+  const saved=store.get(); if(saved&&saved.name&&saved.pin) login(saved.name,saved.pin,true);
+  setInterval(renderTips,60000);
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden) loadData(); });
+})();
+</script>
+</body>
+</html>
